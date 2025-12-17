@@ -202,8 +202,7 @@ class TradeStationDataDownloader:
                 "interval": self.config.interval,
                 "unit": self.config.unit,
                 "barsback": self.config.max_bars_per_request,
-                "enddate": current_end.strftime("%Y-%m-%d"),
-                "sessiontemplate": "USEQPreAndPost"
+                "enddate": current_end.strftime("%Y-%m-%d")
             }
             
             url = f"{self.BASE_URL}/marketdata/barcharts/{symbol}"
@@ -239,8 +238,14 @@ class TradeStationDataDownloader:
         
         if not all_bars:
             return pd.DataFrame()
-        
-        return self._bars_to_dataframe(all_bars, start_date)
+
+        df = self._bars_to_dataframe(all_bars, start_date)
+
+        # Drop the last bar as it may be incomplete (still building)
+        if len(df) > 0:
+            df = df.iloc[:-1]
+
+        return df
     
     def _bars_to_dataframe(self, bars: List[Dict], 
                            start_date: datetime) -> pd.DataFrame:
