@@ -202,7 +202,7 @@ class TradeStationDataDownloader:
                 "interval": self.config.interval,
                 "unit": self.config.unit,
                 "barsback": self.config.max_bars_per_request,
-                "enddate": current_end.strftime("%Y-%m-%d")
+                "lastdate": current_end.strftime("%Y-%m-%dT%H:%M:%SZ")
             }
             
             url = f"{self.BASE_URL}/marketdata/barcharts/{symbol}"
@@ -216,11 +216,19 @@ class TradeStationDataDownloader:
             request_count += 1
 
             # Bars are returned in ascending order (oldest first)
-            # Get the oldest bar timestamp (first bar in response)
-            oldest_bar_time = pd.to_datetime(bars[0]["TimeStamp"])
-            if oldest_bar_time.tzinfo is not None:
-                oldest_bar_time = oldest_bar_time.replace(tzinfo=None)
-            
+            first_bar_time = pd.to_datetime(bars[0]["TimeStamp"])
+            last_bar_time = pd.to_datetime(bars[-1]["TimeStamp"])
+            if first_bar_time.tzinfo is not None:
+                first_bar_time = first_bar_time.replace(tzinfo=None)
+            if last_bar_time.tzinfo is not None:
+                last_bar_time = last_bar_time.replace(tzinfo=None)
+
+            # Log first and last bar of each batch
+            logger.info(f"  Batch {request_count}: {len(bars):,} bars | "
+                       f"First: {first_bar_time} | Last: {last_bar_time}")
+
+            oldest_bar_time = first_bar_time
+
             # Progress update
             if request_count % 5 == 0:
                 logger.info(f"  {symbol}: Downloaded to {oldest_bar_time.date()} | "
@@ -339,7 +347,7 @@ class TradeStationDataDownloader:
                     return existing_df
         
         # Download new data
-        logger.info(f"  Downloading from {start_date.date()} to now...")
+        logger.info(f"  Downloading from {start_date} to now...")
         new_df = self.get_bars(symbol, start_date)
         
         if new_df.empty and existing_df is None:
