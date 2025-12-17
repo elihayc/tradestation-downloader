@@ -1,0 +1,76 @@
+# TradeStation Historical Data Downloader Configuration
+# =====================================================
+# Copy this file to config.yaml and fill in your credentials
+
+# TradeStation API Credentials
+# Get these from: https://developer.tradestation.com/
+tradestation:
+  client_id: "YOUR_CLIENT_ID"
+  client_secret: "YOUR_CLIENT_SECRET"
+  refresh_token: "YOUR_REFRESH_TOKEN"
+
+# Data Settings
+data_dir: "./data"           # Where to save downloaded data
+start_date: "2007-01-01"     # How far back to download
+interval: 1                   # Bar interval
+unit: "Minute"               # Bar unit: Minute, Daily, Weekly
+
+# Rate Limiting (be careful not to exceed API limits)
+rate_limit_delay: 0.5        # Seconds between API requests
+max_retries: 3               # Retries on failed requests
+parallel_downloads: 1        # Parallel symbol downloads (keep at 1 to be safe)
+
+# Symbols to Download
+# Comment out this section to use all default US futures
+# Or specify exactly which symbols you want:
+symbols:
+  # Equity Index Futures
+  - "@ES"     # E-mini S&P 500
+  - "@NQ"     # E-mini Nasdaq 100
+  - "@YM"     # E-mini Dow Jones
+  - "@RTY"    # E-mini Russell 2000
+  
+  # Micro Equity Index
+  - "@MES"    # Micro E-mini S&P 500
+  - "@MNQ"    # Micro E-mini Nasdaq 100
+  
+  # Energy Futures
+  - "@CL"     # Crude Oil (WTI)
+  - "@NG"     # Natural Gas
+  - "@RB"     # RBOB Gasoline
+  - "@HO"     # Heating Oil
+  
+  # Metals Futures
+  - "@GC"     # Gold
+  - "@SI"     # Silver
+  - "@HG"     # Copper
+  - "@PL"     # Platinum
+  
+  # Treasury Futures
+  - "@ZB"     # 30-Year Treasury Bond
+  - "@ZN"     # 10-Year Treasury Note
+  - "@ZF"     # 5-Year Treasury Note
+  - "@ZT"     # 2-Year Treasury Note
+  
+  # Agriculture - Grains
+  - "@ZC"     # Corn
+  - "@ZS"     # Soybeans
+  - "@ZW"     # Wheat
+  
+  # Agriculture - Softs
+  - "@KC"     # Coffee
+  - "@SB"     # Sugar
+  - "@CT"     # Cotton
+  
+  # Agriculture - Meats
+  - "@LE"     # Live Cattle
+  - "@HE"     # Lean Hogs
+  
+  # Currency Futures
+  - "@6E"     # Euro FX
+  - "@6J"     # Japanese Yen
+  - "@6B"     # British Pound
+  - "@6A"     # Australian Dollar
+  
+  # Volatility
+  - "@VX"     # VIX Futures
