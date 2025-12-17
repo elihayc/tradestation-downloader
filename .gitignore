@@ -24,6 +24,7 @@ config.yaml.backup
 # IDE
 .idea/
 .vscode/
+.claude/
 *.swp
 *.swo
 
