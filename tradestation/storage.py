@@ -14,11 +14,6 @@ from .models import StorageFormat
 logger = logging.getLogger(__name__)
 
 
-def _clean_symbol(symbol: str) -> str:
-    """Clean symbol name for filesystem compatibility."""
-    return symbol.replace("@", "").replace("/", "_")
-
-
 def _prepare_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     """Prepare DataFrame for storage (ensure datetime, sort, dedupe)."""
     df = df.copy()
@@ -60,7 +55,7 @@ class SingleFileStorage(StorageBackend):
     """Store all data for each symbol in a single Parquet file."""
 
     def _get_filepath(self, symbol: str) -> Path:
-        return self.data_dir / f"{_clean_symbol(symbol)}_1min.parquet"
+        return self.data_dir / f"{symbol}_1min.parquet"
 
     def save(self, symbol: str, df: pd.DataFrame) -> None:
         df = _prepare_dataframe(df)
@@ -89,7 +84,7 @@ class DailyPartitionedStorage(StorageBackend):
     """Store data partitioned by day (Hive-style: symbol/year=YYYY/month=MM/day=DD/)."""
 
     def _get_symbol_dir(self, symbol: str) -> Path:
-        return self.data_dir / _clean_symbol(symbol)
+        return self.data_dir / symbol
 
     def _get_partition_path(self, symbol: str, dt: datetime) -> Path:
         return (
@@ -97,7 +92,7 @@ class DailyPartitionedStorage(StorageBackend):
             / f"year={dt.year}"
             / f"month={dt.month:02d}"
             / f"day={dt.day:02d}"
-            / f"{_clean_symbol(symbol)}.parquet"
+            / f"{symbol}.parquet"
         )
 
     def _get_partition_files(self, symbol: str) -> list[Path]:
@@ -139,7 +134,7 @@ class MonthlyPartitionedStorage(StorageBackend):
     """Store data partitioned by month (Hive-style: symbol/year_month=YYYY-MM/)."""
 
     def _get_symbol_dir(self, symbol: str) -> Path:
-        return self.data_dir / _clean_symbol(symbol)
+        return self.data_dir / symbol
 
     def _get_partition_path(self, symbol: str, dt: datetime) -> Path:
         year_month = dt.strftime("%Y-%m")
