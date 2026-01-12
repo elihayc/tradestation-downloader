@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "tradestation-downloader"
-version = "1.0.0"
+version = "1.0.1"
 description = "Download and analyze historical futures data from TradeStation API"
 readme = "README.md"
 license = "MIT"
