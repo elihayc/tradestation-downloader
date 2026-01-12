@@ -134,24 +134,24 @@ class DailyPartitionedStorage(StorageBackend):
 
 
 class MonthlyPartitionedStorage(StorageBackend):
-    """Store data partitioned by month (Hive-style: symbol/year=YYYY/month=MM/)."""
+    """Store data partitioned by month (Hive-style: symbol/year_month=YYYY-MM/)."""
 
     def _get_symbol_dir(self, symbol: str) -> Path:
         return self.data_dir / _clean_symbol(symbol)
 
     def _get_partition_path(self, symbol: str, dt: datetime) -> Path:
+        year_month = dt.strftime("%Y-%m")
         return (
             self._get_symbol_dir(symbol)
-            / f"year={dt.year}"
-            / f"month={dt.month:02d}"
-            / f"{_clean_symbol(symbol)}.parquet"
+            / f"year_month={year_month}"
+            / "data-0.parquet"
         )
 
     def _get_partition_files(self, symbol: str) -> list[Path]:
         symbol_dir = self._get_symbol_dir(symbol)
         if not symbol_dir.exists():
             return []
-        return sorted(symbol_dir.glob("year=*/month=*/*.parquet"))
+        return sorted(symbol_dir.glob("year_month=*/*.parquet"))
 
     def save(self, symbol: str, df: pd.DataFrame) -> None:
         df = _prepare_dataframe(df)
@@ -174,7 +174,7 @@ class MonthlyPartitionedStorage(StorageBackend):
     def list_symbols(self) -> list[str]:
         symbols = []
         for item in self.data_dir.iterdir():
-            if item.is_dir() and list(item.glob("year=*")):
+            if item.is_dir() and list(item.glob("year_month=*")):
                 symbols.append(item.name)
         return sorted(symbols)
 
@@ -204,6 +204,10 @@ def detect_storage_format(data_dir: Path) -> StorageFormat:
         if item.is_dir() and not item.name.endswith(".parquet"):
             if list(item.glob("year=*/month=*/day=*")):
                 return StorageFormat.DAILY
+            # Check for new year_month=YYYY-MM format first
+            if list(item.glob("year_month=*")):
+                return StorageFormat.MONTHLY
+            # Also check legacy year=/month= format
             if list(item.glob("year=*/month=*")):
                 return StorageFormat.MONTHLY
 

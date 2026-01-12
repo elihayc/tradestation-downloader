@@ -11,7 +11,7 @@ class StorageFormat(Enum):
 
     SINGLE = "single"    # One file per symbol: ES_1min.parquet
     DAILY = "daily"      # Partitioned by day: ES/year=2024/month=01/day=15/ES.parquet
-    MONTHLY = "monthly"  # Partitioned by month: ES/year=2024/month=01/ES.parquet
+    MONTHLY = "monthly"  # Partitioned by month: ES/year_month=2024-01/data-0.parquet
 
     @classmethod
     def from_string(cls, value: str) -> "StorageFormat":
