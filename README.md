@@ -78,6 +78,9 @@ tradestation-download --list-categories
 
 # Download specific category
 tradestation-download --category index
+
+# Save without datetime index (raw format)
+tradestation-download -s @ES --no-datetime-index
 ```
 
 > **Note:** On Windows, the `@` symbol has special meaning in CMD/PowerShell.
@@ -117,22 +120,22 @@ symbols:
 
 Data is saved as Parquet files in the `data_dir`. Structure depends on storage format:
 
-**Single file (default):**
+**Single file (with datetime index):**
 ```
 data/
-├── ES_1min.parquet
-├── NQ_1min.parquet
-└── CL_1min.parquet
+├── @ES_index_1_1min.parquet
+├── @NQ_index_1_1min.parquet
+└── @CL_index_1_1min.parquet
 ```
 
-**Monthly partitioned:**
+**Monthly partitioned (default with datetime index):**
 ```
 data/
-├── ES/
+├── @ES_index_1/
 │   ├── year_month=2024-01/data-0.parquet
 │   ├── year_month=2024-02/data-0.parquet
 │   └── ...
-└── NQ/
+└── @NQ_index_1/
     └── ...
 ```
 
@@ -147,18 +150,57 @@ Each file contains:
 | close    | float    | Closing price            |
 | volume   | int      | Total volume             |
 
+## DateTime Index Mode
+
+By default, data is saved with `datetime` as the DataFrame index, enabling pandas time-series operations like `resample()` and time-based slicing. This adds an `_index_1` suffix to folder names.
+
+**Default (recommended):**
+```bash
+tradestation-download -s @ES
+```
+→ Creates `@ES_index_1/` folder with datetime as index
+
+**Raw format (datetime as column):**
+```bash
+tradestation-download -s @ES --no-datetime-index
+```
+→ Creates `@ES/` folder with datetime as regular column
+
+**Why use datetime index?**
+- `df.resample('5min')` works directly
+- Time slicing: `df['2024-01':'2024-06']`
+- Compatible with pandas time-series functions
+- Matches common conventions for OHLCV data
+
+**Folder structure with index (default):**
+```
+data/
+├── @ES_index_1/
+│   ├── year_month=2024-01/data-0.parquet
+│   └── year_month=2024-02/data-0.parquet
+└── @NQ_index_1/
+    └── ...
+```
+
 ## Loading Data
 
 ```python
 import pandas as pd
 
-# Load single symbol
-df = pd.read_parquet("data/ES_1min.parquet")
+# Load single symbol (monthly partitioned with datetime index)
+df = pd.read_parquet("data/@ES_index_1")
 print(df.head())
 
-# Load multiple symbols
-symbols = ["ES", "NQ", "CL"]
-data = {s: pd.read_parquet(f"data/{s}_1min.parquet") for s in symbols}
+# Resample to 5-minute bars (works because datetime is the index)
+df_5min = df.resample('5min').agg({
+    'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last', 'volume': 'sum'
+}).dropna()
+
+# Time-based slicing
+df_2024 = df['2024-01':'2024-12']
+
+# Load single file format
+df = pd.read_parquet("data/ES_1min.parquet")
 ```
 
 ## Python API

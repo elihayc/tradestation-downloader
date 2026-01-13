@@ -73,6 +73,7 @@ class TradeStationDownloader:
             config.storage_format,
             Path(config.data_dir),
             compression=config.compression.value,
+            datetime_index=config.datetime_index,
         )
         self._stats = DownloadStats()
 
@@ -121,7 +122,11 @@ class TradeStationDownloader:
         if incremental:
             existing_df = self._storage.load(symbol)
             if existing_df is not None and len(existing_df) > 0:
-                last_date = existing_df["datetime"].max()
+                # Get last date from index (if datetime_index=True) or column
+                if "datetime" in existing_df.columns:
+                    last_date = existing_df["datetime"].max()
+                else:
+                    last_date = existing_df.index.max()
                 logger.info("  Existing data up to %s", last_date)
                 start_date = last_date + timedelta(minutes=1)
 
@@ -228,6 +233,12 @@ class TradeStationDownloader:
 
         df = df.rename(columns=_COLUMN_MAP)
         df = df[[c for c in _OUTPUT_COLUMNS if c in df.columns]]
+
+        # Convert OHLCV to numeric types
+        for col in ["open", "high", "low", "close", "volume"]:
+            if col in df.columns:
+                df[col] = pd.to_numeric(df[col], errors="coerce")
+
         df = df.sort_values("datetime").drop_duplicates(subset=["datetime"], keep="last")
         df = df[df["datetime"] >= start_date]
         return df.reset_index(drop=True)

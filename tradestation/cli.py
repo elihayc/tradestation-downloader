@@ -66,6 +66,11 @@ Examples:
         help="Parquet compression: zstd (default), snappy, gzip, lz4, or none",
     )
     parser.add_argument(
+        "--no-datetime-index",
+        action="store_true",
+        help="Save as @ES (raw) instead of @ES_index_1 (with datetime index)",
+    )
+    parser.add_argument(
         "--list-symbols",
         action="store_true",
         help="List all default symbols and exit",
@@ -146,6 +151,10 @@ def run_download(args: argparse.Namespace) -> int:
     # Override compression if provided
     if args.compression:
         config.compression = Compression.from_string(args.compression)
+
+    # Override datetime_index if provided
+    if args.no_datetime_index:
+        config.datetime_index = False
 
     # Run downloader
     try:

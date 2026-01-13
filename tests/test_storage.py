@@ -1,9 +1,6 @@
 """Tests for storage module."""
 
-from datetime import datetime
-
 import pandas as pd
-import pytest
 
 from tradestation.models import StorageFormat
 from tradestation.storage import (
@@ -39,7 +36,9 @@ class TestSingleFileStorage:
 
         assert loaded is not None
         assert len(loaded) == 2
-        assert list(loaded.columns) == ["datetime", "open", "high", "low", "close", "volume"]
+        # datetime is the index (datetime_index=True by default)
+        assert list(loaded.columns) == ["open", "high", "low", "close", "volume"]
+        assert loaded.index.name == "datetime"
 
     def test_load_nonexistent(self, temp_data_dir):
         storage = SingleFileStorage(temp_data_dir)
@@ -91,9 +90,9 @@ class TestDailyPartitionedStorage:
 
         storage.save("ES", df)
 
-        # Check partition directories exist
-        assert (temp_data_dir / "ES" / "year=2024" / "month=01" / "day=15").exists()
-        assert (temp_data_dir / "ES" / "year=2024" / "month=01" / "day=16").exists()
+        # Check partition directories exist (datetime_index=True adds _index_1 suffix)
+        assert (temp_data_dir / "ES_index_1" / "year=2024" / "month=01" / "day=15").exists()
+        assert (temp_data_dir / "ES_index_1" / "year=2024" / "month=01" / "day=16").exists()
 
 
 class TestMonthlyPartitionedStorage:
@@ -121,9 +120,9 @@ class TestMonthlyPartitionedStorage:
 
         storage.save("ES", df)
 
-        # Check partition directories exist
-        assert (temp_data_dir / "ES" / "year=2024" / "month=01").exists()
-        assert (temp_data_dir / "ES" / "year=2024" / "month=02").exists()
+        # Check partition directories exist (datetime_index=True adds _index_1 suffix)
+        assert (temp_data_dir / "ES_index_1" / "year_month=2024-01").exists()
+        assert (temp_data_dir / "ES_index_1" / "year_month=2024-02").exists()
 
 
 class TestCreateStorage:

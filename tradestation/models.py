@@ -59,6 +59,7 @@ class DownloadConfig:
     max_retries: int = 3
     storage_format: StorageFormat = StorageFormat.SINGLE
     compression: Compression = Compression.ZSTD
+    datetime_index: bool = True  # Save with datetime as index (adds _index_1 suffix)
 
     def __post_init__(self):
         """Validate and convert fields after initialization."""
