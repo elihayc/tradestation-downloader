@@ -185,14 +185,14 @@ class TradeStationDownloader:
                     last_date = existing_df["datetime"].max()
                 else:
                     last_date = existing_df.index.max()
-                logger.info("  Existing data up to %s", last_date)
+                logger.info("  [%s] Existing: %d bars up to %s", symbol, len(existing_df), last_date)
                 start_date = last_date + timedelta(minutes=1)
 
-        logger.info("  Downloading from %s...", start_date.date())
+        logger.info("  [%s] Downloading from %s...", symbol, start_date.date())
         new_df = self._fetch_bars(symbol, start_date)
 
         if new_df.empty and existing_df is None:
-            logger.warning("  No data retrieved")
+            logger.warning("  [%s] No data retrieved", symbol)
             with self._stats_lock:
                 self._stats.errors += 1
                 self._stats.failed_symbols.append(symbol)
@@ -204,7 +204,7 @@ class TradeStationDownloader:
         with self._stats_lock:
             self._stats.symbols_processed += 1
             self._stats.bars_downloaded += len(new_df)
-        logger.info("  Saved %d bars", len(df))
+        logger.info("  [%s] Added %d bars, total %d", symbol, len(new_df), len(df))
         return df
 
     def _fetch_bars(self, symbol: str, start_date: datetime) -> pd.DataFrame:
@@ -224,7 +224,7 @@ class TradeStationDownloader:
 
             oldest = pd.to_datetime(bars[0]["TimeStamp"]).replace(tzinfo=None)
             newest = pd.to_datetime(bars[-1]["TimeStamp"]).replace(tzinfo=None)
-            logger.info("  Batch %d: %d bars (%s to %s)", batch_num, len(bars), oldest.date(), newest.date())
+            logger.info("  [%s] Batch %d: %d bars (%s to %s)", symbol, batch_num, len(bars), oldest.date(), newest.date())
 
             if oldest <= start_date:
                 break
