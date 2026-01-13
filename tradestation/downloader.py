@@ -305,6 +305,13 @@ class TradeStationDownloader:
             return new
         if new.empty:
             return existing
+
+        # Ensure datetime is a column (not index) for both DataFrames before merging
+        if "datetime" not in existing.columns and isinstance(existing.index, pd.DatetimeIndex):
+            existing = existing.reset_index(names=["datetime"])
+        if "datetime" not in new.columns and isinstance(new.index, pd.DatetimeIndex):
+            new = new.reset_index(names=["datetime"])
+
         df = pd.concat([existing, new], ignore_index=True)
         return df.drop_duplicates(subset=["datetime"], keep="last").sort_values("datetime").reset_index(drop=True)
 
