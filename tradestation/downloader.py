@@ -188,12 +188,6 @@ class TradeStationDownloader:
                 logger.info("  Existing data up to %s", last_date)
                 start_date = last_date + timedelta(minutes=1)
 
-                if start_date >= datetime.now() - timedelta(hours=1):
-                    logger.info("  Already up to date")
-                    with self._stats_lock:
-                        self._stats.symbols_skipped += 1
-                    return existing_df
-
         logger.info("  Downloading from %s...", start_date.date())
         new_df = self._fetch_bars(symbol, start_date)
 
