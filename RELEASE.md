@@ -1,5 +1,17 @@
 # Release Instructions
 
+## Prerequisites
+
+Ensure build tools are installed:
+```bash
+uv pip install build twine
+```
+
+Or install all dev dependencies:
+```bash
+uv sync --extra dev
+```
+
 ## Steps to publish a new version to PyPI
 
 ### 1. Update version number
@@ -20,8 +32,14 @@ git push && git push --tags
 
 ### 3. Clean old builds
 
+**Unix/Linux/macOS:**
 ```bash
 rm -rf dist/
+```
+
+**Windows PowerShell:**
+```powershell
+Remove-Item -Recurse -Force dist/
 ```
 
 ### 4. Build package
