@@ -18,7 +18,7 @@ from .downloader import DownloadStats, TradeStationDownloader
 from .models import DEFAULT_SYMBOLS, Compression, DownloadConfig, StorageFormat, get_all_symbols
 from .storage import StorageBackend, create_storage, detect_storage_format
 
-__version__ = "1.0.3"
+__version__ = "1.0.4"
 
 __all__ = [
     "TradeStationDownloader",
